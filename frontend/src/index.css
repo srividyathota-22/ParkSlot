@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-paper font-sans text-ink antialiased; }
+  :focus-visible { @apply outline-none ring-2 ring-sign ring-offset-2 ring-offset-paper; }
+}
+
+@layer components {
+  .field {
+    @apply mt-1.5 w-full rounded-lg border border-ink/20 bg-white px-3.5 py-2.5 text-base text-ink
+           placeholder:text-ink/40 focus:border-sign;
+  }
+  .btn-primary {
+    @apply inline-flex w-full items-center justify-center gap-2 rounded-lg bg-asphalt px-4 py-3
+           font-semibold text-paper transition-colors hover:bg-ink disabled:opacity-60;
+  }
+  .btn-volt {
+    @apply inline-flex items-center gap-2 rounded-full bg-volt px-5 py-3 font-semibold text-asphalt
+           transition hover:brightness-95;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-3 font-medium
+           text-mist transition hover:bg-white/10;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
