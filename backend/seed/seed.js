@@ -55,15 +55,14 @@ const Notification = require('../models/Notification');
     if (!has2dsphere) throw new Error(' 2dsphere index on Listing.location missing!');
     if (!hasUniqueLock) throw new Error(' unique(slotId, hourStart) on SlotLock missing!');
     console.log(' Critical indexes verified');
-
     console.log('\n Creating users...');
     const bcrypt = require('bcryptjs');
     const hash = await bcrypt.hash('password123', 10);
-   const adminHash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'password123', 10);
-   const admin = await User.create({
-  name: 'Platform Admin', email: 'admin@parking.com', phone: '9000000000',passwordHash: adminHash, 
-  role: 'admin', status: 'active'
-});
+    const adminHash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'password123', 10);
+    const admin = await User.create({
+      name: 'Platform Admin', email: 'admin@parking.com', phone: '9000000000',passwordHash: adminHash, 
+      role: 'admin', status: 'active'
+    });
     const driver = await User.create({
       name: 'Ravi (Driver)', email: 'driver@parking.com', phone: '9111111111',
       passwordHash: hash, role: 'driver', status: 'active',
