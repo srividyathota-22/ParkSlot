@@ -1,5 +1,3 @@
-// Booking engine test. Run with the server running:  node test/bookings.js
-// The driver picks the slot (slotId). Test bookings are deleted at the end.
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('../models/User');
@@ -78,9 +76,8 @@ const login = async (email) => (await call('POST', '/auth/login', { body: { emai
       body: { listingId: String(listing._id), slotId: String(slotId), vehicleId: String(vehicle._id), start: ist(day, h1), end: ist(day, h2) },
     });
   const locksOf = (id) => SlotLock.find({ bookingId: id }).sort({ hourStart: 1 });
-  const has = (id) => !!id; // stops later steps from calling /bookings/undefined
+  const has = (id) => !!id; 
 
-  // ---------- 1. Basic booking ----------
   console.log('BASIC BOOKING (Indiranagar slot A1, auto-approve, 10:00-12:00 India time)');
   const a = await book(indira, A1, car, 10, 12);
   const A = bookingOf(a);
@@ -93,7 +90,6 @@ const login = async (email) => (await call('POST', '/auth/login', { body: { emai
     aLocks.map((l) => l.hourStart.toISOString()).join() === [ist(day, 10), ist(day, 11)].join(),
     aLocks.map((l) => l.hourStart.toISOString()).join());
 
-  // ---------- 2. Double booking ----------
   console.log('\nDOUBLE BOOKING');
   const same = await book(indira, A1, car, 10, 12);
   check('same slot, same time is refused (409)', same.status === 409, `status ${same.status} ${JSON.stringify(same.data).slice(0, 100)}`);
@@ -106,7 +102,6 @@ const login = async (email) => (await call('POST', '/auth/login', { body: { emai
   const other = await book(indira, A2, car, 10, 12);
   check('a different slot at the same time is allowed (201)', other.status === 201, `status ${other.status}`);
 
-  // ---------- 3. Cancel frees the slot ----------
   console.log('\nCANCEL');
   if (has(A._id)) {
     const cancel = await call('PATCH', `/bookings/${A._id}/cancel`, { token: driverTok });
@@ -119,7 +114,6 @@ const login = async (email) => (await call('POST', '/auth/login', { body: { emai
     check('cancel tests skipped, the first booking was not created', false);
   }
 
-  // ---------- 4. Races ----------
   console.log('\nRACE 1 (6 drivers click at the same instant on the same slot)');
   const race = await Promise.all(Array.from({ length: 6 }, () => book(mg, C2, car, 14, 15)));
   const won = race.filter((r) => r.status === 201);
@@ -136,8 +130,6 @@ const login = async (email) => (await call('POST', '/auth/login', { body: { emai
   check('only 1 of the 6 overlapping requests succeeds', race2.filter((r) => r.status === 201).length === 1, `statuses ${race2.map((r) => r.status).join(',')}`);
   const hours17 = await SlotLock.countDocuments({ slotId: C2, hourStart: new Date(ist(day, 17)) });
   check('hour 17:00 is locked only once', hours17 === 1, `got ${hours17}`);
-
-  // ---------- 5. Manual approval ----------
   console.log('\nMANUAL APPROVAL (Koramangala bike listing)');
   const p1 = await book(kor, B1, bike, 10, 11);
   const p2 = await book(kor, B2, bike, 10, 11);
@@ -164,7 +156,6 @@ const login = async (email) => (await call('POST', '/auth/login', { body: { emai
     check('approve and reject tests skipped, pending bookings were not created', false);
   }
 
-  // ---------- 6. Validation ----------
   console.log('\nVALIDATION');
   check('outside opening hours (02:00-03:00) is refused (400)', (await book(indira, A1, car, 2, 3)).status === 400);
   check('end before start is refused (400)', (await book(indira, A1, car, 12, 10)).status === 400);
@@ -174,7 +165,6 @@ const login = async (email) => (await call('POST', '/auth/login', { body: { emai
   check('no token is refused (401)', noTok.status === 401, `status ${noTok.status}`);
   check('an owner account cannot book (403)', (await book(indira, A2, car, 16, 17, ownerTok)).status === 403);
 
-  // ---------- 7. History ----------
   console.log('\nHISTORY');
   const mine = await call('GET', '/bookings', { token: driverTok });
   const myList = mine.data.bookings || mine.data;
