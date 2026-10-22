@@ -17,6 +17,14 @@ const toUtc = (date, time) => new Date(`${date}T${time}:00+05:30`).toISOString()
 const when = (iso) =>
   new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const stand = (type) => (type === '2-wheeler' ? '/bike/bike-wall-poster.jpg' : '/videos/hero-poster.jpg');
+const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function hoursText(rules = []) {
+  const groups = {};
+  rules.forEach((r) => { (groups[`${r.startTime} to ${r.endTime}`] ||= []).push(r.dayOfWeek); });
+  return Object.entries(groups)
+    .map(([time, days]) => `${days.sort((a, b) => a - b).map((d) => DAY[d]).join(', ')}: ${time}`)
+    .join(' · ');
+}
 
 export default function Search() {
   const { user, logout } = useAuth();
@@ -31,6 +39,11 @@ export default function Search() {
   const [finding, setFinding] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [slotPick, setSlotPick] = useState(null);
+  const [detail, setDetail] = useState(null);
+  useEffect(() => {
+    setDetail(null);
+    if (selectedId) api(`/listings/${selectedId}`).then(setDetail).catch(() => {});
+  }, [selectedId]);
   const [booking, setBooking] = useState({ busy: false, error: '' });
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -179,11 +192,12 @@ export default function Search() {
                   {selected.description && <p className="mt-1 text-sm text-ink/80">{selected.description}</p>}
                 </div>
                 <p className="text-sm text-ink/70">₹{selected.prices.hourly}/hr{selected.prices.daily ? ` · ₹${selected.prices.daily}/day` : ''}{selected.prices.monthly ? ` · ₹${selected.prices.monthly}/month` : ''}</p>
+                                {detail?.availabilityRules?.length > 0 && <p className="text-sm text-ink/70">Open: {hoursText(detail.availabilityRules)} (India time)</p>}
                 <div role="group" aria-label="Choose a slot" className="flex flex-wrap gap-2">
                   {selected.availableSlots.map((s) => (
                     <button key={s._id} type="button" aria-pressed={slotId === s._id} onClick={() => setSlotPick(s._id)}
                       className={`rounded-full border px-4 py-1.5 text-sm font-medium ${slotId === s._id ? 'border-volt bg-volt text-asphalt' : 'border-ink/25 hover:border-ink/50'}`}>
-                      Bay {s.label}
+                      Bay {s.label}{s.size ? ` · ${s.size}` : ''}
                     </button>
                   ))}
                 </div>
