@@ -140,7 +140,8 @@ function Reports() {
 
   const cards = [
     ['Drivers', r.counts.drivers], ['Owners', r.counts.owners], ['Active listings', r.counts.activeListings], ['Bays', r.counts.slots],
-    ['Bookings', r.totals.bookings], ['Revenue', `₹${r.totals.revenue}`], ['Booked hours', r.totals.bookedHours],
+    ['Bookings', r.totals.bookings], ['Revenue', `₹${r.totals.revenue}`], ['Booked hours', r.totals.bookedHours],    ['Conversion Rate', `${r.conversionRate}%`], 
+    ['Utilization Rate', `${r.utilization}%`]   
   ];
   return (
     <div className="space-y-8">

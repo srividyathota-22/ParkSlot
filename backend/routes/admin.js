@@ -37,12 +37,12 @@ router.get('/stats', protect, allow('admin'), async (req, res) => {
     const totalOwners = await User.countDocuments({ role: 'owner' });
     const totalBookings = await Booking.countDocuments();
     const activeListings = await Listing.countDocuments({ status: 'active' });
-    
-
     const bookings = await Booking.find({ status: { $in: ['confirmed', 'completed'] } });
     const totalRevenue = bookings.reduce((sum, b) => sum + b.priceTotal, 0);
+    const totalSlots = active.reduce((s, l) => s + l.slots.length, 0);
 
-    res.json({ totalUsers, totalOwners, totalBookings, activeListings, totalRevenue });
+
+    res.json({ totalUsers, totalOwners, totalBookings, activeListings, totalRevenue, conversionRate, utilization });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -61,7 +61,7 @@ router.get('/owners', protect, allow('admin'), async (req, res) => {
 
 router.patch('/owners/:id/verify', protect, allow('admin'), async (req, res) => {
   try {
-    const { action, reason } = req.body; // 'approve' | 'reject'
+    const { action, reason } = req.body; 
     const profile = await OwnerProfile.findById(req.params.id);
     if (!profile) return res.status(404).json({ message: 'Profile not found' });
 
@@ -129,7 +129,7 @@ router.get('/reports', protect, allow('admin'), async (req, res) => {
     const [drivers, owners, listings, bookings] = await Promise.all([
       User.countDocuments({ role: 'driver' }),
       User.countDocuments({ role: 'owner' }),
-      Listing.find({}, 'title status slots'),
+      Listing.find({}, 'title status slots availabilityRules'),
       Booking.find({}).populate('listingId', 'title'),
     ]);
     const earning = ['confirmed', 'active', 'completed'];
@@ -149,16 +149,38 @@ router.get('/reports', protect, allow('admin'), async (req, res) => {
       perListing[title].bookings += 1;
       perListing[title].revenue += b.priceTotal;
       perListing[title].hours += h;
-      const day = new Date(b.start.getTime() + 5.5 * 3600000).toISOString().slice(0, 10); // India date
+      const day = new Date(b.start.getTime() + 5.5 * 3600000).toISOString().slice(0, 10);
       perDay[day] = (perDay[day] || 0) + b.priceTotal;
     });
     const active = listings.filter((l) => l.status === 'active');
+    const successful = bookings.filter((b) => earning.includes(b.status)).length;
+    const conversionRate = bookings.length ? Number(((successful / bookings.length) * 100).toFixed(1)) : 0;
+       const DAY = 86400000;
+       const winFrom = Date.now() - 30 * DAY;
+       const winTo = Date.now() + 30 * DAY;
+       const weeklyHours = (rules = []) => rules.reduce((s, r) => {
+       const [sh, sm] = r.startTime.split(':').map(Number);
+       const [eh, em] = r.endTime.split(':').map(Number);
+         return s + Math.max(0, (eh * 60 + em - sh * 60 - sm) / 60);
+       }, 0);
+       const openHours = active.reduce((s, l) => s + l.slots.length * weeklyHours(l.availabilityRules) * (60 / 7), 0);
+       let usedHours = 0;
+       bookings.forEach((b) => {
+       if (!earning.includes(b.status)) return;
+       const a = Math.max(b.start.getTime(), winFrom);
+       const z = Math.min(b.end.getTime(), winTo);
+      if (z > a) usedHours += (z - a) / 3600000;
+       });
+       const utilization = openHours ? Number(((usedHours / openHours) * 100).toFixed(1)) : 0;
+   
     res.json({
       counts: { drivers, owners, activeListings: active.length, slots: active.reduce((s, l) => s + l.slots.length, 0) },
       totals: { bookings: bookings.length, revenue, bookedHours: Math.round(hours * 10) / 10 },
       byStatus,
       perListing: Object.values(perListing).sort((a, b) => b.revenue - a.revenue),
       byDay: Object.entries(perDay).sort().map(([day, amount]) => ({ day, amount })),
+      conversionRate,
+      utilization  
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
