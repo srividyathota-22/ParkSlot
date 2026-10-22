@@ -186,5 +186,34 @@ router.get('/reports', protect, allow('admin'), async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+// All users
+router.get('/users', protect, allow('admin'), async (req, res) => {
+  try {
+    const users = await User.find({}, 'name email role status createdAt').sort({ createdAt: -1 }).limit(500);
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Suspend or reactivate a user
+router.patch('/users/:id/status', protect, allow('admin'), async (req, res) => {
+  try {
+    const { status } = req.body || {};
+    if (!['active', 'suspended'].includes(status)) return res.status(400).json({ message: "status must be 'active' or 'suspended'" });
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.role === 'admin') return res.status(400).json({ message: 'Admin accounts cannot be suspended here' });
+    user.status = status;
+    if (status === 'suspended') user.refreshTokenHash = undefined; // ends their session at the next refresh
+    await user.save();
+    if (status === 'suspended' && user.role === 'owner') {
+      await Listing.updateMany({ ownerId: user._id, status: 'active' }, { status: 'paused' });
+    }
+    res.json({ message: `User ${status}`, user: { _id: user._id, name: user.name, email: user.email, role: user.role, status: user.status } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;

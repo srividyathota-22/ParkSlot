@@ -140,5 +140,17 @@ router.patch('/listings/:id/reactivate', protect, allow('owner'), async (req, re
   await listing.save();
   res.json({ message: 'Reactivated', listing });
 });
+router.delete('/listings/:id/blocks/:blockId', protect, allow('owner'), async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+    if (listing.ownerId.toString() !== req.user.id) return res.status(403).json({ message: 'Not your listing' });
+    listing.blocks.pull({ _id: req.params.blockId });
+    await listing.save();
+    res.json({ blocks: listing.blocks });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;

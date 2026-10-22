@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { Chip, asList, range } from '../lib.jsx';
 import { Link } from 'react-router-dom';
 import VerifyBox from '../components/VerifyBox.jsx';
+import ManageListing from '../components/ManageListing.jsx';
 
 
 export default function OwnerDashboard() {
@@ -92,6 +93,7 @@ export default function OwnerDashboard() {
                 <p className="mt-1 text-sm text-ink/65">{l.location?.area} · {l.slots?.length} bays · ₹{l.prices?.hourly}/hr · {l.approvalMode === 'auto' ? 'instant' : 'you approve'}</p>
                 {l.status === 'active' && <button onClick={() => act(`/owner/listings/${l._id}/pause`, l._id)} disabled={busy === l._id} className="mt-3 rounded-lg border border-ink/25 px-4 py-1.5 text-sm hover:bg-ink/5">Pause</button>}
                 {l.status === 'paused' && <button onClick={() => act(`/owner/listings/${l._id}/reactivate`, l._id)} disabled={busy === l._id} className="mt-3 rounded-lg bg-volt px-4 py-1.5 text-sm font-semibold text-asphalt">Reactivate</button>}
+                <ManageListing listing={l} onDone={load} />
               </li>
             ))}
           </ul>

@@ -13,6 +13,7 @@ const TONE = {
   paused: 'bg-stone-200 text-stone-700',
   cancelled: 'bg-red-100 text-red-900',
   rejected: 'bg-red-100 text-red-900',
+  suspended: 'bg-red-100 text-red-900',
 };
 export function Chip({ s }) {
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONE[s] || TONE.completed}`}>{s.replace('_', ' ')}</span>;

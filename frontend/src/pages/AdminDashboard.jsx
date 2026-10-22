@@ -140,8 +140,8 @@ function Reports() {
 
   const cards = [
     ['Drivers', r.counts.drivers], ['Owners', r.counts.owners], ['Active listings', r.counts.activeListings], ['Bays', r.counts.slots],
-    ['Bookings', r.totals.bookings], ['Revenue', `₹${r.totals.revenue}`], ['Booked hours', r.totals.bookedHours],    ['Conversion Rate', `${r.conversionRate}%`], 
-    ['Utilization Rate', `${r.utilization}%`]   
+    ['Bookings', r.totals.bookings], ['Revenue', `₹${r.totals.revenue}`], ['Booked hours', r.totals.bookedHours],    ['Conversion Rate', `${r.conversionRate}%`],  
+    ['Slot utilization', `${r.kpis?.utilizationPercent ?? 0}%`], ['Booking success rate', `${r.kpis?.successRatePercent ?? 0}%`],
   ];
   return (
     <div className="space-y-8">
@@ -208,7 +208,46 @@ function Disputes() {
     </div>
   );
 }
-const TABS = [['verify', 'Verification'], ['bookings', 'Bookings'], ['reports', 'Reports'],['disputes', 'Disputes']];
+function Users() {
+  const [rows, setRows] = useState([]);
+  const [q, setQ] = useState('');
+  const [error, setError] = useState('');
+  const load = useCallback(() => api('/admin/users').then((d) => setRows(d.users)).catch((e) => setError(e.message)), []);
+  useEffect(() => { load(); }, [load]);
+
+  async function toggle(u) {
+    const next = u.status === 'suspended' ? 'active' : 'suspended';
+    if (next === 'suspended' && !window.confirm(`Suspend ${u.name}?${u.role === 'owner' ? ' Their active listings will be paused.' : ''}`)) return;
+    setError('');
+    try { await api(`/admin/users/${u._id}/status`, { method: 'PATCH', body: { status: next } }); await load(); }
+    catch (e) { setError(e.message); }
+  }
+  const shown = rows.filter((u) => `${u.name} ${u.email} ${u.role}`.toLowerCase().includes(q.toLowerCase()));
+
+  return (
+    <div className="space-y-4">
+      <input className="field !mt-0 max-w-sm" placeholder="Search name, email or role" value={q} onChange={(e) => setQ(e.target.value)} />
+      {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+      <ul className="divide-y divide-ink/10 rounded-2xl border border-ink/15 bg-white">
+        {shown.map((u) => (
+          <li key={u._id} className="flex flex-wrap items-center justify-between gap-2 p-4">
+            <div>
+              <p className="font-medium">{u.name} <span className="text-sm text-ink/60">{u.role}</span></p>
+              <p className="text-sm text-ink/65">{u.email}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Chip s={u.status} />
+              {u.role !== 'admin' && (
+                <button onClick={() => toggle(u)} className="text-sm underline">{u.status === 'suspended' ? 'Reactivate' : 'Suspend'}</button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+const TABS = [['verify', 'Verification'], ['bookings', 'Bookings'], ['reports', 'Reports'],['disputes', 'Disputes'],['users', 'Users']];
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('verify');
@@ -229,6 +268,7 @@ export default function AdminDashboard() {
         {tab === 'bookings' && <AllBookings />}
         {tab === 'disputes' && <Disputes />}
         {tab === 'reports' && <Reports />}
+        {tab === 'users' && <Users />}
       </main>
     </div>
   );
