@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';// remenber to paste import form notepad
+import Register from './pages/Register.jsx';
 import Search from './pages/Search.jsx';
 import MyBookings from './pages/MyBookings.jsx';
 import OwnerDashboard from './pages/OwnerDashboard.jsx';

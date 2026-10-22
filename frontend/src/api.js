@@ -1,5 +1,3 @@
-// All backend calls go through api(). It adds the access token and, on a 401,
-// refreshes it once with the refresh token and retries.
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const K = { access: 'sp_access', refresh: 'sp_refresh', user: 'sp_user' };
 

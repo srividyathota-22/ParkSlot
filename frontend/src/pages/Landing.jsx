@@ -128,8 +128,6 @@ export default function Landing() {
           ))}
         </ol>
       </section>
-
-      {/* CARS AND BIKES */}
       <section id="vehicles" className="bg-asphalt py-24 text-mist">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 lg:grid-cols-2">
           <Reveal>
@@ -163,7 +161,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* OWNERS */}
       <section id="owners" className="w-full my-12 md:my-16">
         <div className="relative w-full overflow-hidden h-[650px] md:h-[550px] flex items-center bg-asphalt">
           

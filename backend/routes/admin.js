@@ -31,7 +31,6 @@ const OwnerProfile = require('../models/OwnerProfile');
 const Dispute = require('../models/Dispute');
 const Booking = require('../models/Booking');
 
-// GET /api/admin/stats - Dashboard KPIs
 router.get('/stats', protect, allow('admin'), async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ role: 'driver' });
@@ -39,7 +38,7 @@ router.get('/stats', protect, allow('admin'), async (req, res) => {
     const totalBookings = await Booking.countDocuments();
     const activeListings = await Listing.countDocuments({ status: 'active' });
     
-    // Calculate total revenue
+
     const bookings = await Booking.find({ status: { $in: ['confirmed', 'completed'] } });
     const totalRevenue = bookings.reduce((sum, b) => sum + b.priceTotal, 0);
 
@@ -49,7 +48,6 @@ router.get('/stats', protect, allow('admin'), async (req, res) => {
   }
 });
 
-// GET /api/admin/owners - Get all owners pending verification
 router.get('/owners', protect, allow('admin'), async (req, res) => {
   try {
     const profiles = await OwnerProfile.find()
@@ -61,7 +59,6 @@ router.get('/owners', protect, allow('admin'), async (req, res) => {
   }
 });
 
-// PATCH /api/admin/owners/:id/verify - Approve or reject owner
 router.patch('/owners/:id/verify', protect, allow('admin'), async (req, res) => {
   try {
     const { action, reason } = req.body; // 'approve' | 'reject'
@@ -84,7 +81,6 @@ router.patch('/owners/:id/verify', protect, allow('admin'), async (req, res) => 
   }
 });
 
-// GET /api/admin/listings - Get all listings
 router.get('/listings', protect, allow('admin'), async (req, res) => {
   try {
     const listings = await Listing.find().populate('ownerId', 'name email').sort({ createdAt: -1 });
@@ -106,7 +102,6 @@ router.get('/disputes', protect, allow('admin'), async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-// Owners and listings waiting for a decision
 router.get('/verifications', protect, allow('admin'), async (req, res) => {
   try {
     const owners = await OwnerProfile.find({ verificationStatus: 'pending' }).populate('userId', 'name email phone').sort({ createdAt: 1 });
@@ -117,7 +112,7 @@ router.get('/verifications', protect, allow('admin'), async (req, res) => {
   }
 });
 
-// Every booking, newest first (optional ?status=pending)
+
 router.get('/bookings', protect, allow('admin'), async (req, res) => {
   try {
     const q = req.query.status ? { status: req.query.status } : {};
@@ -129,7 +124,6 @@ router.get('/bookings', protect, allow('admin'), async (req, res) => {
   }
 });
 
-// Numbers for the reports tab
 router.get('/reports', protect, allow('admin'), async (req, res) => {
   try {
     const [drivers, owners, listings, bookings] = await Promise.all([

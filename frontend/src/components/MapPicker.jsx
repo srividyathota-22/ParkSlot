@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Click the map to drop a marker. onChange gets [lat, lng].
 export default function MapPicker({ value, onChange }) {
   const el = useRef(null);
   const map = useRef(null);

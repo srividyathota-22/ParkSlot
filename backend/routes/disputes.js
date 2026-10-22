@@ -7,8 +7,6 @@ const { protect, allow } = require('../middleware/auth');
 const { notify } = require('../services/notify');
 
 router.use(protect);
-
-// Driver or owner of the booking raises a dispute
 router.post('/', async (req, res) => {
   try {
     if (req.user.role === 'admin') return res.status(403).json({ message: 'Admins resolve disputes, they do not raise them' });
@@ -33,7 +31,6 @@ router.post('/', async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// Admin sees all disputes, everyone else sees their own
 router.get('/', async (req, res) => {
   try {
     const q = req.user.role === 'admin' ? {} : { raisedBy: req.user.id };

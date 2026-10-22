@@ -165,7 +165,7 @@ export default function Search() {
             </button>
           </form>
 
-          {query && <p className="text-sm text-ink/60">India time, {when(query.start)} to {when(query.end).slice(-5)}</p>}
+          {query && <p className="text-sm text-ink/60">India time, {when(query.start)} to  {new Date(query.end).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })}</p>}
           {notice && <p role="status" className="flex gap-2 rounded-lg bg-emerald-100 p-3 text-sm text-emerald-900"><Check className="h-5 w-5 shrink-0" /> {notice}</p>}
           {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
 

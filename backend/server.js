@@ -8,13 +8,11 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/slots', require('./routes/slots'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/owner', require('./routes/owner'));
 app.use('/api/listings', require('./routes/listings'));
 app.use('/api/search', require('./routes/search'));
-app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/disputes', require('./routes/disputes'));
 
