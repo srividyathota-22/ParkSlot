@@ -28,6 +28,13 @@ async function createBooking({ userId, listingId, slotId, vehicleId, start, end 
   const slot = listing.slots.find((s) => s._id.toString() === slotId.toString());
   if (!slot) throw new Error('Slot not found on listing');
   if (!slot.isActive) throw new Error('Slot is not active');
+    const minutes = (endDate - startDate) / 60000;
+  if (minutes < (listing.minDurationMinutes || 0)) {
+    throw new Error(`Minimum booking is ${listing.minDurationMinutes} minutes`);
+  }
+  if (startDate.getTime() < Date.now() + (listing.advanceNoticeMinutes || 0) * 60000) {
+    throw new Error(listing.advanceNoticeMinutes ? `Book at least ${listing.advanceNoticeMinutes} minutes ahead` : 'The start time is in the past');
+  }
   const slotFits =
     slot.vehicleType === 'both' ||
     slot.vehicleType === listing.vehicleTypes[0] || 

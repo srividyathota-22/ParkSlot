@@ -9,7 +9,8 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const bays = (prefix, n, vehicleType, size) => Array.from({ length: n }, (_, i) => ({ label: `${prefix}${i + 1}`, vehicleType, size, isActive: true }));
 
 export default function NewListing() {
-  const [f, setF] = useState({ title: '', description: '', city: 'Bengaluru', area: '', address: '', pincode: '', landmark: '', photo: '', cars: 2, bikes: 0, from: '08:00', to: '20:00', hourly: '', daily: '', monthly: '', approvalMode: 'manual' });
+  const [f, setF] = useState({ title: '', description: '', city: 'Bengaluru', area: '', address: '', pincode: '', landmark: '', photo: '', cars: 2, bikes: 0,
+     from: '08:00', to: '20:00', hourly: '', daily: '', monthly: '', approvalMode: 'manual', minDuration: 60, notice: 0 });
   const [days, setDays] = useState([1, 2, 3, 4, 5]);
   const [point, setPoint] = useState(null);
   const [error, setError] = useState('');
@@ -42,6 +43,8 @@ export default function NewListing() {
           availabilityRules: days.map((d) => ({ dayOfWeek: d, startTime: f.from, endTime: f.to })),
           approvalMode: f.approvalMode,
           prices: { hourly: Number(f.hourly), daily: f.daily ? Number(f.daily) : undefined, monthly: f.monthly ? Number(f.monthly) : undefined },
+          minDurationMinutes: Number(f.minDuration), 
+          advanceNoticeMinutes: Number(f.notice),
         },
       });
       setDone(true);
@@ -107,6 +110,8 @@ export default function NewListing() {
             <Field label="₹ per hour" type="number" min="1" required value={f.hourly} onChange={set('hourly')} />
             <Field label="₹ per day" type="number" min="1" value={f.daily} onChange={set('daily')} />
             <Field label="₹ per month" type="number" min="1" value={f.monthly} onChange={set('monthly')} />
+            <Field label="Minimum minutes" type="number" min="15" value={f.minDuration} onChange={set('minDuration')} />
+            <Field label="Advance notice (minutes)" type="number" min="0" value={f.notice} onChange={set('notice')} />
           </div>
 
           <label className="block text-sm font-medium">New bookings
