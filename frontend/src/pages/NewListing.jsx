@@ -48,8 +48,16 @@ export default function NewListing() {
         },
       });
       setDone(true);
-    } catch (err) { setError(err.message); } finally { setBusy(false); }
+    } catch (err) {
+  const errorMsg = err.response?.data?.message || err.message;
+  
+  if (errorMsg.includes('geo keys') || errorMsg.includes('coordinates') || errorMsg.includes('Point')) {
+    setError("Invalid location! Please click on the map again to select a valid spot.");
+  } else {
+    setError(errorMsg);
   }
+} finally { setBusy(false);
+} }
 
   if (done) {
     return (
