@@ -8,7 +8,6 @@ const icon = L.divIcon({
     html: '<div style="transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#FF6115;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:grab"></div>',
 });
 
-// Click the map or drag the pin. onChange gets [lat, lng].
 export default function MapPicker({ value, onChange }) {
   const el = useRef(null);
   const map = useRef(null);

@@ -1,6 +1,4 @@
 import { useState } from 'react';
-
-// Looks a place up by name. onFound is called only when a real match comes back.
 export default function PlaceFinder({ onFound }) {
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);

@@ -26,14 +26,10 @@ export default function NewListing() {
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const toggle = (d) => setDays(days.includes(d) ? days.filter((x) => x !== d) : [...days, d]);
-
-  // Keep the latitude and longitude boxes in step with the pin (except while typing in them)
   useEffect(() => {
     if (typed.current) { typed.current = false; return; }
     if (point) setCoords({ lat: point[0].toFixed(6), lng: point[1].toFixed(6) });
   }, [point]);
-
-  // Ask OpenStreetMap which place the pin is on
   useEffect(() => {
     if (!point) { setNear(null); return undefined; }
     const t = setTimeout(async () => {
