@@ -39,8 +39,7 @@ router.get('/stats', protect, allow('admin'), async (req, res) => {
     const activeListings = await Listing.countDocuments({ status: 'active' });
     const bookings = await Booking.find({ status: { $in: ['confirmed', 'completed'] } });
     const totalRevenue = bookings.reduce((sum, b) => sum + b.priceTotal, 0);
-    const totalSlots = active.reduce((s, l) => s + l.slots.length, 0);
-
+    const conversionRate = totalBookings > 0 ? ((bookings.length / totalBookings) * 100).toFixed(2) : 0;
 
     res.json({ totalUsers, totalOwners, totalBookings, activeListings, totalRevenue, conversionRate, utilization });
   } catch (err) {

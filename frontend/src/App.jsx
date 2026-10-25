@@ -9,12 +9,13 @@ import OwnerDashboard from './pages/OwnerDashboard.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import NewListing from './pages/NewListing.jsx';
 
-function Protected({ children }) {
+function Protected({ children, role }) {
   const { user, ready } = useAuth();
   if (!ready) return null;
-  return user ? children : <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (role && user.role !== role) return <Navigate to="/app" replace />;
+  return children;
 }
-
 function GuestOnly({ children }) {
   const { user, ready } = useAuth();
   if (!ready) return null;
@@ -35,9 +36,9 @@ export default function App() {
       <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
       <Route path="/register" element={<GuestOnly><Register /></GuestOnly>} />
       <Route path="/bookings" element={<Protected><MyBookings /></Protected>} />
-      <Route path="/owner/dashboard" element={<Protected><OwnerDashboard /></Protected>} />
-      <Route path="/admin/dashboard" element={<Protected><AdminDashboard /></Protected>} />
-      <Route path="/listings/new" element={<Protected><NewListing /></Protected>} />
+      <Route path="/owner/dashboard" element={<Protected role="owner"><OwnerDashboard /></Protected>} />
+      <Route path="/admin/dashboard" element={<Protected role="admin"><AdminDashboard /></Protected>} />
+      <Route path="/listings/new" element={<Protected role="owner"><NewListing /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
