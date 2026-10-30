@@ -1,18 +1,14 @@
 const SlotLock = require('../models/SlotLock');
 const { istClockToUtc, istDayOfWeek, startOfIstDay } = require('./time');
+const { hourBuckets } = require('./booking');
 
 async function getLockedSlotIds(slotIds, start, end) {
   if (!slotIds.length) return new Set();
-  const startHour = new Date(start);
-  startHour.setUTCMinutes(0, 0, 0);
-  const endHour = new Date(end);
-  endHour.setUTCMinutes(0, 0, 0);
-
+  const hours = hourBuckets(new Date(start), new Date(end));
   const locks = await SlotLock.find({
     slotId: { $in: slotIds },
-    hourStart: { $gte: startHour, $lt: endHour },
+    hourStart: { $in: hours },
   }).select('slotId').lean();
-
   return new Set(locks.map((l) => l.slotId.toString()));
 }
 const Listing = require('../models/Listing');

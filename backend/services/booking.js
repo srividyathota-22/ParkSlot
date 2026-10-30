@@ -16,8 +16,7 @@ function hourBuckets(start, end) {
   for (let t = first; t < end.getTime(); t += HOUR_MS) buckets.push(new Date(t));
   return buckets;
 }
-
-async function createBooking({ userId, listingId, slotId, vehicleId, start, end }) {
+async function createBooking({ userId, listingId, slotId, vehicleId, vehicleType, start, end }) {
   const startDate = new Date(start);
   const endDate = new Date(end);
   if (!(startDate < endDate)) throw new Error('start must be before end');
@@ -35,16 +34,16 @@ async function createBooking({ userId, listingId, slotId, vehicleId, start, end 
   if (startDate.getTime() < Date.now() + (listing.advanceNoticeMinutes || 0) * 60000) {
     throw new Error(listing.advanceNoticeMinutes ? `Book at least ${listing.advanceNoticeMinutes} minutes ahead` : 'The start time is in the past');
   }
-  const slotFits =
-    slot.vehicleType === 'both' ||
-    slot.vehicleType === listing.vehicleTypes[0] || 
-    listing.vehicleTypes.some((vt) => vt === slot.vehicleType);
   if (vehicleId) {
     const vehicle = await Vehicle.findOne({ _id: vehicleId, userId });
     if (!vehicle) throw new Error('Vehicle not found');
     if (slot.vehicleType !== 'both' && slot.vehicleType !== vehicle.type) {
       throw new Error('This slot does not fit your vehicle type');
     }
+  }
+  if (!vehicleId) {
+    if (!['2-wheeler', '4-wheeler'].includes(vehicleType)) throw new Error('vehicleType is required');
+    if (slot.vehicleType !== 'both' && slot.vehicleType !== vehicleType) throw new Error('This slot does not fit your vehicle type');
   }
   if (!isWithinAvailability(listing.availabilityRules || [], startDate, endDate))
     throw new Error('Requested window is outside availability');

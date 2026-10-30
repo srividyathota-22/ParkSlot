@@ -7,7 +7,11 @@ const protect = (req, res, next) => {
 
   try {
     const token = auth.split(' ')[1];
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (payload.type === 'refresh' || !['driver', 'owner', 'admin'].includes(payload.role)) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    req.user = payload;
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError')

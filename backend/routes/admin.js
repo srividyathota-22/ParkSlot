@@ -31,22 +31,6 @@ const OwnerProfile = require('../models/OwnerProfile');
 const Dispute = require('../models/Dispute');
 const Booking = require('../models/Booking');
 
-router.get('/stats', protect, allow('admin'), async (req, res) => {
-  try {
-    const totalUsers = await User.countDocuments({ role: 'driver' });
-    const totalOwners = await User.countDocuments({ role: 'owner' });
-    const totalBookings = await Booking.countDocuments();
-    const activeListings = await Listing.countDocuments({ status: 'active' });
-    const bookings = await Booking.find({ status: { $in: ['confirmed', 'completed'] } });
-    const totalRevenue = bookings.reduce((sum, b) => sum + b.priceTotal, 0);
-    const conversionRate = totalBookings > 0 ? ((bookings.length / totalBookings) * 100).toFixed(2) : 0;
-
-    res.json({ totalUsers, totalOwners, totalBookings, activeListings, totalRevenue, conversionRate, utilization });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 router.get('/owners', protect, allow('admin'), async (req, res) => {
   try {
     const profiles = await OwnerProfile.find()
@@ -60,7 +44,8 @@ router.get('/owners', protect, allow('admin'), async (req, res) => {
 
 router.patch('/owners/:id/verify', protect, allow('admin'), async (req, res) => {
   try {
-    const { action, reason } = req.body; 
+    const { action, reason } = req.body || {};
+    if (!['approve', 'reject'].includes(action)) return res.status(400).json({ message: "action must be 'approve' or 'reject'" });
     const profile = await OwnerProfile.findById(req.params.id);
     if (!profile) return res.status(404).json({ message: 'Profile not found' });
 

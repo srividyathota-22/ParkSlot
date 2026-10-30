@@ -9,7 +9,7 @@ router.post('/', protect, async (req, res) => {
     if (req.user.role !== 'driver')
       return res.status(403).json({ message: 'Only drivers can create bookings' });
 
-    const { listingId, slotId, vehicleId, start, end } = req.body;
+    const { listingId, slotId, vehicleId,vehicleType, start, end } = req.body;
     if (!listingId || !slotId || !start || !end)
       return res.status(400).json({ message: 'listingId, slotId, start, end are required' });
     if (vehicleId) {
@@ -35,12 +35,15 @@ router.post('/', protect, async (req, res) => {
       listingId,
       slotId,
       vehicleId,
+      vehicleType,
       start,
       end,
     });
 
     res.status(201).json(booking);
   } catch (err) {
+    if (err.codeName === 'WriteConflict' || (err.errorLabels || []).includes('TransientTransactionError'))
+    return res.status(409).json({ message: 'Slot just taken' });
     if (err.code === 409) return res.status(409).json({ message: err.message });
     if (err.code === 404) return res.status(404).json({ message: err.message });
     res.status(400).json({ message: err.message });
@@ -53,7 +56,8 @@ router.get('/', protect, async (req, res) => {
     else if (req.user.role === 'owner') {
       const owned = await Listing.find({ ownerId: req.user.id }).select('_id').lean();
       filter = { listingId: { $in: owned.map((l) => l._id) } };
-    } else if (req.user.role === 'admin') filter = {};
+    }    else if (req.user.role === 'admin') filter = {};
+    else return res.status(403).json({ message: 'Forbidden' });
 
     const bookings = await Booking.find(filter)
       .populate('listingId', 'title location photos')

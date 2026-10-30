@@ -102,7 +102,7 @@ export default function Search() {
   async function reserve() {
     setBooking({ busy: true, error: '' });
     try {
-      const res = await api('/bookings', { method: 'POST', body: { listingId: selected._id, slotId, start: query.start, end: query.end } });
+      const res = await api('/bookings', { method: 'POST', body: { listingId: selected._id, slotId, vehicleType: form.vehicle, start: query.start, end: query.end } });
       const b = res.booking || res;
       setNotice(b.status === 'confirmed' ? `Booked. Your bay at ${selected.title} is confirmed.` : `Request sent for ${selected.title}. The owner will confirm soon.`);
       setBooking({ busy: false, error: '' });

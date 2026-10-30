@@ -4,7 +4,7 @@ const Listing = require('../models/Listing');
 router.get('/:id', async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
-      .populate('ownerId', 'name phone email');
+      .populate('ownerId', 'name');
 
     if (!listing) return res.status(404).json({ message: 'Listing not found' });
 
