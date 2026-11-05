@@ -12,7 +12,11 @@ const PLACES = [
   { name: 'Koramangala', lat: 12.9352, lng: 77.6245 },
 ];
 const IST_MS = 5.5 * 60 * 60 * 1000;
-const tomorrow = () => new Date(Date.now() + IST_MS + 864e5).toISOString().slice(0, 10);
+   const tomorrow = () => {
+     let d = new Date(Date.now() + IST_MS + 864e5);
+     while ([0, 6].includes(d.getUTCDay())) d = new Date(d.getTime() + 864e5);
+     return d.toISOString().slice(0, 10);
+   };
 const toUtc = (date, time) => new Date(`${date}T${time}:00+05:30`).toISOString(); // times are India time
 const when = (iso) =>
   new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
