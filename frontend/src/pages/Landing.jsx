@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { ArrowRight, Bike, CalendarCheck, CarFront, MapPin, ParkingSquare } from 'lucide-react';
+import { ArrowRight, Bike, CalendarCheck, CarFront, MapPin, Menu, ParkingSquare,X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx'; 
 
 function Reveal({ children, delay = 0, className = '' }) {
@@ -46,6 +47,7 @@ const go = (id) => (e) => {
 };
 export default function Landing() {
   const { user } = useAuth();
+  const [menu, setMenu] = useState(false);
 
   return (
     <div className="bg-paper text-ink">
@@ -72,8 +74,18 @@ export default function Landing() {
                 <Link to="/register" className="btn-volt !py-2 text-sm">Sign up</Link>
               </>
             )}
+            <button onClick={() => setMenu(!menu)} className="rounded-md p-2 hover:bg-white/10 md:hidden" aria-label="Menu" aria-expanded={menu}>
+              {menu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </header>
+        {menu && (
+          <nav className="absolute left-6 right-6 top-[4.5rem] z-20 flex flex-col rounded-2xl bg-panel/95 p-2 text-mist backdrop-blur md:hidden">
+            {[['how', 'How it works'], ['vehicles', 'Cars and bikes'], ['owners', 'For owners']].map(([id, label]) => (
+              <a key={id} href={`#${id}`} onClick={(e) => { go(id)(e); setMenu(false); }} className="rounded-xl px-4 py-3 hover:bg-white/10">{label}</a>
+            ))}
+          </nav>
+        )}
 
         <div className="relative z-10 mx-auto flex min-h-[calc(92vh-5rem)] max-w-6xl flex-col justify-center px-6 pb-16">
           <Reveal>
